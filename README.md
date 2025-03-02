@@ -25,7 +25,7 @@ cd kanely
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-python run src/run.py
+python src/run.py
 ```
 
 Note - this uses the WSGI server that ships with Flask. Do not use in outward-facing deployments.
