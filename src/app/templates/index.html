@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="jumbotron text-center">
+    <h1 class="display-4">Welcome to Kanely!</h1>
+    <p class="lead">A simple and effective way to manage your tasks and projects</p>
+    <hr class="my-4">
+    <p>Organize your work, track progress, and boost productivity with my intuitive Kanban board system.</p>
+    <div class="mt-4">
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('kanban.boards') }}" class="btn btn-primary btn-lg">Go to My Boards</a>
+        {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg me-2">Login</a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary btn-lg">Register</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <i class="fas fa-tasks fa-3x mb-3 text-primary"></i>
+                <h3 class="card-title">Organize Tasks</h3>
+                <p class="card-text">Create boards for different projects and organize tasks into customizable columns.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-3x mb-3 text-primary"></i>
+                <h3 class="card-title">Track Progress</h3>
+                <p class="card-text">Visualize your workflow and track progress as tasks move through different stages.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-3x mb-3 text-primary"></i>
+                <h3 class="card-title">Personal Workspace</h3>
+                <p class="card-text">Create your account to have a personal workspace for all your projects and tasks.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

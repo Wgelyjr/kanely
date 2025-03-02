@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Share Board{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">Share "{{ board.title }}"</h3>
+                <a href="{{ url_for('kanban.board', board_id=board.id) }}" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Board
+                </a>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.user_email.label(class="form-label") }}
+                        {% if form.user_email.errors %}
+                            {{ form.user_email(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.user_email.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.user_email(class="form-control") }}
+                        {% endif %}
+                        <div class="form-text">Enter the email address of the user you want to share this board with.</div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.permission.label(class="form-label") }}
+                        {{ form.permission(class="form-select") }}
+                        <div class="form-text">
+                            <strong>View Only:</strong> User can view the board but cannot make changes.<br>
+                            <strong>Can Edit:</strong> User can add, edit, and delete cards and columns.
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Shared Users List -->
+        <div class="card mt-4">
+            <div class="card-header bg-secondary text-white">
+                <h4 class="mb-0">Currently Shared With</h4>
+            </div>
+            <div class="card-body">
+                {% if shared_users %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Permission</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for share in shared_users %}
+                            <tr>
+                                <td>{{ share.user.username }}</td>
+                                <td>{{ share.user.email }}</td>
+                                <td>
+                                    {% if share.can_edit %}
+                                    <span class="badge bg-success">Can Edit</span>
+                                    {% else %}
+                                    <span class="badge bg-info">View Only</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form action="{{ url_for('kanban.remove_share', board_id=board.id, user_id=share.user.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to remove this user\'s access?')">
+                                            <i class="fas fa-trash me-1"></i> Remove
+                                        </button>
+                                    </form>
+                                    {% if not share.can_edit %}
+                                    <form action="{{ url_for('kanban.update_share_permission', board_id=board.id, user_id=share.user.id) }}" method="POST" class="d-inline">
+                                        <input type="hidden" name="permission" value="edit">
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit me-1"></i> Grant Edit
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <form action="{{ url_for('kanban.update_share_permission', board_id=board.id, user_id=share.user.id) }}" method="POST" class="d-inline">
+                                        <input type="hidden" name="permission" value="view">
+                                        <button type="submit" class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-eye me-1"></i> View Only
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info mb-0">
+                    <p class="mb-0">This board is not shared with anyone yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

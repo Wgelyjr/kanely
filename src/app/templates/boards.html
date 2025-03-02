@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}My Boards{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>My Boards</h1>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createBoardModal">
+        <i class="fas fa-plus me-1"></i> New Board
+    </button>
+</div>
+
+<h2 class="mb-3">My Boards</h2>
+
+{% if owned_boards %}
+<div class="row">
+    {% for board in owned_boards %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ board.title }}</h5>
+                <span class="badge bg-light text-dark">Owner</span>
+            </div>
+            <div class="card-body">
+                <p class="card-text text-muted">
+                    <small>{{ board.columns|length }} columns</small>
+                </p>
+            </div>
+            <div class="card-footer bg-transparent d-flex justify-content-between">
+                <div>
+                    <a href="{{ url_for('kanban.board', board_id=board.id) }}" class="btn btn-sm btn-outline-primary me-1">
+                        <i class="fas fa-eye me-1"></i> View
+                    </a>
+                    <a href="{{ url_for('kanban.share_board', board_id=board.id) }}" class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-share-alt me-1"></i> Share
+                    </a>
+                </div>
+                <form action="{{ url_for('kanban.delete_board', board_id=board.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this board?')">
+                        <i class="fas fa-trash me-1"></i> Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    <p class="mb-0">You don't have any boards yet. Create your first board to get started!</p>
+</div>
+{% endif %}
+
+{% if shared_boards %}
+<h2 class="mb-3 mt-5">Shared With Me</h2>
+<div class="row">
+    {% for board in shared_boards %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ board.title }}</h5>
+                <span class="badge bg-light text-dark">
+                    {% if board.can_edit(current_user) %}
+                    Can Edit
+                    {% else %}
+                    View Only
+                    {% endif %}
+                </span>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    <small class="text-muted">Owned by: {{ board.owner.username }}</small><br>
+                    <small class="text-muted">{{ board.columns|length }} columns</small>
+                </p>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ url_for('kanban.board', board_id=board.id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-eye me-1"></i> View
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if not owned_boards and not shared_boards %}
+<div class="alert alert-info">
+    <p class="mb-0">You don't have any boards yet. Create your first board to get started!</p>
+</div>
+{% endif %}
+
+<!-- Create Board Modal -->
+<div class="modal fade" id="createBoardModal" tabindex="-1" aria-labelledby="createBoardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createBoardModalLabel">Create New Board</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('kanban.new_board') }}">
+                <div class="modal-body">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {% if form.title.errors %}
+                            {{ form.title(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.title.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.title(class="form-control") }}
+                        {% endif %}
+                        <div class="form-text">
+                            Your board will be created with default columns: To Do, In Progress, and Done.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

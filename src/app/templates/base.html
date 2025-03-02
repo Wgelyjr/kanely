@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" class="{% if current_user.is_authenticated and current_user.dark_mode %}dark-mode{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban - {% block title %}{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block styles %}{% endblock %}
+    
+    <!-- Dark mode CSS -->
+    <style>
+        .dark-mode {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --card-bg: #1e1e1e;
+            --border-color: #333;
+            --primary-color: #4da3ff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --light-color: #343a40;
+            --dark-color: #f8f9fa;
+        }
+        
+        .dark-mode body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        
+        .dark-mode .card {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+        }
+        
+        .dark-mode .card-header {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-color: var(--border-color);
+        }
+        
+        .dark-mode .card-footer {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-color: var(--border-color);
+        }
+        
+        .dark-mode .navbar-dark {
+            background-color: #000 !important;
+        }
+        
+        .dark-mode .bg-dark {
+            background-color: #000 !important;
+        }
+        
+        .dark-mode .text-muted {
+            color: #adb5bd !important;
+        }
+        
+        .dark-mode .form-control {
+            background-color: #2c2c2c;
+            border-color: var(--border-color);
+            color: var(--text-color);
+        }
+        
+        .dark-mode .form-control:focus {
+            background-color: #2c2c2c;
+            color: var(--text-color);
+        }
+        
+        .dark-mode .modal-content {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+        }
+        
+        .dark-mode .modal-header, .dark-mode .modal-footer {
+            border-color: var(--border-color);
+        }
+        
+        .dark-mode .kanban-column {
+            background-color: #2c2c2c;
+        }
+        
+        .dark-mode .kanban-column-header {
+            background-color: #252525;
+        }
+        
+        .dark-mode .kanban-card {
+            background-color: #3c3c3c;
+        }
+        
+        .dark-mode .kanban-add-column {
+            background-color: #2c2c2c;
+            border-color: #444;
+        }
+        
+        .dark-mode .jumbotron {
+            background-color: #252525;
+        }
+        
+        .dark-mode .alert-info {
+            background-color: #0d3a58;
+            border-color: #0c5460;
+            color: #d1ecf1;
+        }
+        
+        .dark-mode .alert-success {
+            background-color: #155724;
+            border-color: #0f5132;
+            color: #d4edda;
+        }
+        
+        .dark-mode .alert-danger {
+            background-color: #721c24;
+            border-color: #842029;
+            color: #f8d7da;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" href="{{ url_for('main.home') }}">Kanely</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('kanban.boards') }}">My Boards</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                    <ul class="navbar-nav">
+                        {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <span class="nav-link">Welcome, {{ current_user.username }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.settings') }}">
+                                <i class="fas fa-cog me-1"></i> Settings
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">&copy; 2025 Elyworks - Kanely App</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

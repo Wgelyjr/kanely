@@ -1,0 +1,87 @@
+/* General Styles */
+body {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Navbar Styles */
+.navbar-brand {
+    font-weight: bold;
+}
+
+/* Card Styles */
+.card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Form Styles */
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Button Styles */
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
+
+/* Jumbotron Styles (Bootstrap 5 doesn't have jumbotron, so we create our own) */
+.jumbotron {
+    padding: 2rem 1rem;
+    margin-bottom: 2rem;
+    background-color: #e9ecef;
+    border-radius: 0.3rem;
+}
+
+/* Kanban Board Specific Styles */
+.drag-over {
+    background-color: #e9ecef;
+    border: 2px dashed #007bff;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .kanban-column {
+        min-width: 250px;
+    }
+}
+
+/* Custom Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s;
+}
+
+/* Flash Messages */
+.alert {
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+    animation: fadeIn 0.5s;
+}
+
+/* Footer Styles */
+footer {
+    margin-top: auto;
+}

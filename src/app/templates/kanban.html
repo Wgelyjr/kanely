@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}{{ board.title }}{% endblock %}
+
+{% block styles %}
+<style>
+    .kanban-board {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 1rem;
+        min-height: 70vh;
+    }
+    
+    .kanban-column {
+        min-width: 300px;
+        max-width: 300px;
+        margin-right: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 0.25rem;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .kanban-column-header {
+        padding: 0.75rem;
+        background-color: #e9ecef;
+        border-top-left-radius: 0.25rem;
+        border-top-right-radius: 0.25rem;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .kanban-column-body {
+        padding: 0.75rem;
+        flex-grow: 1;
+        overflow-y: auto;
+        max-height: calc(70vh - 50px);
+    }
+    
+    .kanban-card {
+        background-color: white;
+        border-radius: 0.25rem;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        cursor: grab;
+    }
+    
+    .kanban-card:active {
+        cursor: grabbing;
+    }
+    
+    .kanban-card-title {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .kanban-card-description {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    .kanban-add-column {
+        min-width: 300px;
+        max-width: 300px;
+        margin-right: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 0.25rem;
+        border: 2px dashed #dee2e6;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    }
+    
+    .dragging {
+        opacity: 0.5;
+    }
+    
+    .card-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+    }
+    
+    .card-actions button {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .column-footer {
+        padding: 0.75rem;
+        border-top: 1px solid #dee2e6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>{{ board.title }}</h1>
+        {% if not board.is_owner(current_user) %}
+            <p class="text-muted">Owned by: {{ board.owner.username }}</p>
+        {% endif %}
+    </div>
+    <div>
+        {% if board.is_owner(current_user) %}
+            <a href="{{ url_for('kanban.share_board', board_id=board.id) }}" class="btn btn-success me-2">
+                <i class="fas fa-share-alt me-1"></i> Share Board
+            </a>
+        {% endif %}
+        <a href="{{ url_for('kanban.boards') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Boards
+        </a>
+    </div>
+</div>
+
+<div class="kanban-board">
+    {% for column in columns %}
+    <div class="kanban-column" data-column-id="{{ column.id }}">
+        <div class="kanban-column-header">
+            <span>{{ column.title }}</span>
+            {% if can_edit %}
+            <div>
+                <button type="button" class="btn btn-sm btn-link text-primary p-0 me-2" data-bs-toggle="modal" data-bs-target="#addCardModal{{ column.id }}">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <form action="{{ url_for('kanban.delete_column', column_id=column.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm('Are you sure you want to delete this column and all its cards?')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        <div class="kanban-column-body" id="column{{ column.id }}">
+            {% for card in column.cards|sort(attribute='position') %}
+            <div class="kanban-card" draggable="{% if can_edit %}true{% else %}false{% endif %}" data-card-id="{{ card.id }}">
+                <div class="kanban-card-title">{{ card.title }}</div>
+                {% if card.description %}
+                <div class="kanban-card-description">{{ card.description }}</div>
+                {% endif %}
+                {% if can_edit %}
+                <div class="card-actions">
+                    <form action="{{ url_for('kanban.delete_card', card_id=card.id) }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this card?')">
+                            <i class="fas fa-trash me-1"></i> Delete
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Add Card Modal for this column -->
+    <div class="modal fade" id="addCardModal{{ column.id }}" tabindex="-1" aria-labelledby="addCardModalLabel{{ column.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCardModalLabel{{ column.id }}">Add Card to {{ column.title }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{{ url_for('kanban.new_card', column_id=column.id) }}">
+                    <div class="modal-body">
+                        {{ card_form.hidden_tag() }}
+                        <div class="mb-3">
+                            {{ card_form.title.label(class="form-label") }}
+                            {{ card_form.title(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ card_form.description.label(class="form-label") }}
+                            {{ card_form.description(class="form-control", rows=3) }}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        {{ card_form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+    {% if can_edit %}
+    <!-- Add Column Button -->
+    <div class="kanban-add-column" data-bs-toggle="modal" data-bs-target="#addColumnModal">
+        <div class="text-center">
+            <i class="fas fa-plus fa-2x mb-2 text-muted"></i>
+            <p class="mb-0 text-muted">Add Column</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add Column Modal -->
+<div class="modal fade" id="addColumnModal" tabindex="-1" aria-labelledby="addColumnModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addColumnModalLabel">Add New Column</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('kanban.new_column', board_id=board.id) }}">
+                <div class="modal-body">
+                    {{ column_form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ column_form.title.label(class="form-label") }}
+                        {{ column_form.title(class="form-control") }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    {{ column_form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.kanban-card[draggable="true"]');
+        const columns = document.querySelectorAll('.kanban-column-body');
+        let draggedCard = null;
+        
+        // Add event listeners for drag and drop
+        cards.forEach(card => {
+            card.addEventListener('dragstart', dragStart);
+            card.addEventListener('dragend', dragEnd);
+        });
+        
+        columns.forEach(column => {
+            column.addEventListener('dragover', dragOver);
+            column.addEventListener('dragenter', dragEnter);
+            column.addEventListener('dragleave', dragLeave);
+            column.addEventListener('drop', drop);
+        });
+        
+        function dragStart() {
+            draggedCard = this;
+            setTimeout(() => this.classList.add('dragging'), 0);
+        }
+        
+        function dragEnd() {
+            this.classList.remove('dragging');
+            draggedCard = null;
+        }
+        
+        function dragOver(e) {
+            e.preventDefault();
+        }
+        
+        function dragEnter(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        }
+        
+        function dragLeave() {
+            this.classList.remove('drag-over');
+        }
+        
+        function drop() {
+            this.classList.remove('drag-over');
+            if (!draggedCard) return;
+            
+            const columnId = this.closest('.kanban-column').dataset.columnId;
+            const cardId = draggedCard.dataset.cardId;
+            
+            // Get the position for the dropped card
+            const cards = Array.from(this.querySelectorAll('.kanban-card'));
+            let position = cards.length;
+            
+            // If the card is dropped in the same column, adjust position
+            if (draggedCard.parentNode === this) {
+                cards.splice(cards.indexOf(draggedCard), 1);
+            }
+            
+            // Insert the card at the end of the column
+            this.appendChild(draggedCard);
+            
+            // Send the update to the server
+            updateCardPosition(cardId, columnId, position);
+        }
+        
+        function updateCardPosition(cardId, columnId, position) {
+            fetch(`/card/${cardId}/move`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    columnId: columnId,
+                    position: position
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    console.error('Failed to update card position');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    });
+</script>
+{% endblock %}
