@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/902f4896-7bcc-4048-a28d-111820d49bb2)
+![image](https://github.com/user-attachments/assets/93e51be7-67b9-4625-82c4-91a7a937616b)
 
 # Kanely
 
