@@ -1,5 +1,22 @@
 venv/
 .venv/
-__pycache__/
 *.db
 *.log
+
+# Test coverage reports
+.coverage
+htmlcov/
+coverage.xml
+.pytest_cache/
+
+# Pytest cache
+__pycache__/
+
+# Temporary files
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
