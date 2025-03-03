@@ -9,6 +9,12 @@ Supports multiple users, sharing boards to other users, and self-service onboard
 
 # To Use
 
+Note - there are environment variables for SQLALCHEMY_DATABASE_URI and SECRET_KEY that should be set to affect the app's behavior.
+
+Secret key affects the hash of stored passwords. Do not leave it default in production.
+
+The database URI can be configured to allow for external databases instead of the default SQLite. Has not been tested.
+
 ## Docker
 
 ```
