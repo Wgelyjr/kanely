@@ -107,8 +107,8 @@ def new_board():
 @kanban.route('/board/<int:board_id>')
 @login_required
 def board(board_id):
-    board = Board.query.get_or_404(board_id)
-    
+    board = db.session.get(Board, board_id)
+
     # Check if user is owner or has access
     if not (board.is_owner(current_user) or board.can_view(current_user)):
         abort(403)
@@ -127,7 +127,7 @@ def board(board_id):
 @kanban.route('/board/<int:board_id>/share', methods=['GET', 'POST'])
 @login_required
 def share_board(board_id):
-    board = Board.query.get_or_404(board_id)
+    board = db.session.get(Board, board_id)
     
     # Only the owner can share the board
     if not board.is_owner(current_user):
@@ -180,7 +180,7 @@ def share_board(board_id):
 @kanban.route('/board/<int:board_id>/user/<int:user_id>/remove', methods=['POST'])
 @login_required
 def remove_share(board_id, user_id):
-    board = Board.query.get_or_404(board_id)
+    board = db.session.get(Board, board_id)
     
     # Only the owner can remove shares
     if not board.is_owner(current_user):
@@ -202,7 +202,7 @@ def remove_share(board_id, user_id):
 @kanban.route('/board/<int:board_id>/user/<int:user_id>/permission', methods=['POST'])
 @login_required
 def update_share_permission(board_id, user_id):
-    board = Board.query.get_or_404(board_id)
+    board = db.session.get(Board, board_id)
     
     # Only the owner can update permissions
     if not board.is_owner(current_user):
@@ -228,7 +228,7 @@ def update_share_permission(board_id, user_id):
 @kanban.route('/board/<int:board_id>/column/new', methods=['POST'])
 @login_required
 def new_column(board_id):
-    board = Board.query.get_or_404(board_id)
+    board = db.session.get(Board, board_id)
     
     # Check if user has edit permission
     if not (board.is_owner(current_user) or board.can_edit(current_user)):
@@ -247,7 +247,7 @@ def new_column(board_id):
 @kanban.route('/column/<int:column_id>/card/new', methods=['POST'])
 @login_required
 def new_card(column_id):
-    column = Column.query.get_or_404(column_id)
+    column = db.session.get(Column, column_id)
     board = column.board
     
     # Check if user has edit permission
@@ -272,7 +272,7 @@ def new_card(column_id):
 @kanban.route('/card/<int:card_id>/move', methods=['POST'])
 @login_required
 def move_card(card_id):
-    card = Card.query.get_or_404(card_id)
+    card = db.session.get(Card, card_id)
     board = card.column.board
     
     # Check if user has edit permission
@@ -332,7 +332,7 @@ def move_card(card_id):
 @kanban.route('/board/<int:board_id>/delete', methods=['POST'])
 @login_required
 def delete_board(board_id):
-    board = Board.query.get_or_404(board_id)
+    board = db.session.get(Board, board_id)
     
     # Only the owner can delete the board
     if not board.is_owner(current_user):
@@ -346,7 +346,7 @@ def delete_board(board_id):
 @kanban.route('/column/<int:column_id>/delete', methods=['POST'])
 @login_required
 def delete_column(column_id):
-    column = Column.query.get_or_404(column_id)
+    column = db.session.get(Column, column_id)
     board = column.board
     
     # Check if user has edit permission
@@ -362,7 +362,7 @@ def delete_column(column_id):
 @kanban.route('/card/<int:card_id>/delete', methods=['POST'])
 @login_required
 def delete_card(card_id):
-    card = Card.query.get_or_404(card_id)
+    card = db.session.get(Card, card_id)
     board = card.column.board
     
     # Check if user has edit permission
