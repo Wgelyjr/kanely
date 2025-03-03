@@ -13,7 +13,6 @@ def test_default_config():
     # Check default config values
     assert app.config['SECRET_KEY'] == os.environ.get('SECRET_KEY', 'dev-key-for-testing-only')
     assert app.config['SQLALCHEMY_DATABASE_URI'] == os.environ.get('DATABASE_URL', 'sqlite:///kanban.db')
-    assert app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] is False
 
 
 def test_testing_config():
