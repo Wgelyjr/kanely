@@ -20,7 +20,7 @@ The database URI can be configured to allow for external databases instead of th
 ```
 git clone
 cd kanely
-sudo docker built -t kanely .
+sudo docker build -t kanely .
 sudo docker run -p 5000:5000 kanely
 ```
 
